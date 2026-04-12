@@ -3,6 +3,12 @@ class_name Player
 
 @export var ground_check_cast : ShapeCast2D
 
+@export var wall_check_right : ShapeCast2D
+@export var wall_check_left : ShapeCast2D
+
+var can_wall_jump : bool = false
+var can_climb : bool = false
+
 #movement variables
 var move_input : Vector2 = Vector2.ZERO
 
@@ -13,7 +19,7 @@ const air_friction : float = 1
 
 #jumping variables
 const gravity_accel : float = 1000
-const jump_vel : float = 400
+const jump_vel : float = 500
 var is_grounded : bool = true
 
 #coyote time 
@@ -24,8 +30,10 @@ var timer_coyote : float = 0.0
 const jump_cooldown : float = 0.2
 var timer_jumpcd : float = 0.2
 
-#some variables for later
-const max_wall_slide_vel = 5 # make it so that when wall sliding we have like `velocity = max(velocity.y,max_wall_slide_vel)`
+#wall sliding + jumping
+const max_wall_slide_vel = 80
+var is_wall_sliding : bool = false
+const wall_jump_speed : float = 400
 
 func _ready() -> void:
 	pass
@@ -53,6 +61,16 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_released("jump"):
 		jump_release()
 	
+	#wall slide
+	if(velocity.y > 0):
+		if(get_wall_dir() != 0 ):
+			velocity.y = min(max_wall_slide_vel,velocity.y)
+			is_wall_sliding = true
+		else:
+			is_wall_sliding = false
+	else:
+		is_wall_sliding = false
+	
 	move_and_slide()
 
 func check_grounded():
@@ -68,10 +86,26 @@ func run_timers(delta):
 		timer_coyote -= delta
 
 func jump():
+	#detect if its a wall or ground jump
+	#ground jump
 	if (timer_coyote > 0 or is_grounded) and timer_jumpcd <= 0:
-		velocity.y = jump_vel * -1
-		timer_jumpcd = jump_cooldown
+			velocity.y = jump_vel * -1
+			timer_jumpcd = jump_cooldown
+			is_grounded = false
+	else: #deprioritizes the walljump by being secondary to grounded
+		if(timer_jumpcd <= 0):
+			velocity = Vector2(-1 * get_wall_dir() * wall_jump_speed,jump_vel * -1)
+			timer_jumpcd = jump_cooldown
+			is_grounded = false
 
 func jump_release():
 	if velocity.y < 0:
-		velocity.y = velocity.y * 0.4
+		velocity.y = velocity.y * 0.6
+
+#gets wall directions
+func get_wall_dir():
+	if wall_check_left.is_colliding() && move_input.x < 0:
+		return -1
+	if (wall_check_right.is_colliding() && move_input.x > 0): 
+		return 1
+	return 0
