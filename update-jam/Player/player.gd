@@ -6,7 +6,8 @@ class_name Player
 @export var wall_check_right : ShapeCast2D
 @export var wall_check_left : ShapeCast2D
 
-var can_wall_jump : bool = false
+#"unlock" variables
+var can_wall_jump : bool = true
 var can_climb : bool = false
 
 #movement variables
@@ -33,6 +34,8 @@ var timer_jumpcd : float = 0.2
 #wall sliding + jumping
 const max_wall_slide_vel = 80
 var is_wall_sliding : bool = false
+var timer_wall_slide_cd : float = 0.2
+const wall_slide_cooldown : float = 0.2
 const wall_jump_speed : float = 400
 
 func _ready() -> void:
@@ -63,7 +66,7 @@ func _physics_process(delta: float) -> void:
 	
 	#wall slide
 	if(velocity.y > 0):
-		if(get_wall_dir() != 0 ):
+		if(get_wall_dir() != 0  && can_wall_jump && timer_wall_slide_cd <= 0):
 			velocity.y = min(max_wall_slide_vel,velocity.y)
 			is_wall_sliding = true
 		else:
@@ -84,6 +87,8 @@ func run_timers(delta):
 		timer_jumpcd -= delta
 	if timer_coyote > 0:
 		timer_coyote -= delta
+	if timer_wall_slide_cd > 0:
+		timer_wall_slide_cd -= delta
 
 func jump():
 	#detect if its a wall or ground jump
@@ -93,10 +98,12 @@ func jump():
 			timer_jumpcd = jump_cooldown
 			is_grounded = false
 	else: #deprioritizes the walljump by being secondary to grounded
-		if(timer_jumpcd <= 0):
+		if(timer_jumpcd <= 0 && can_wall_jump && get_wall_dir() != 0 && is_wall_sliding):
 			velocity = Vector2(-1 * get_wall_dir() * wall_jump_speed,jump_vel * -1)
 			timer_jumpcd = jump_cooldown
 			is_grounded = false
+			is_wall_sliding = false
+			timer_wall_slide_cd = wall_slide_cooldown
 
 func jump_release():
 	if velocity.y < 0:
@@ -104,8 +111,10 @@ func jump_release():
 
 #gets wall directions
 func get_wall_dir():
-	if wall_check_left.is_colliding() && move_input.x < 0:
+	if !can_wall_jump:
+		return 0
+	if wall_check_left.is_colliding():
 		return -1
-	if (wall_check_right.is_colliding() && move_input.x > 0): 
+	if wall_check_right.is_colliding():
 		return 1
 	return 0
