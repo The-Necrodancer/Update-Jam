@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dmk6groh1j1ns" path="res://Player/player.gd" id="1_4ntmi"]
 [ext_resource type="Texture2D" uid="uid://d34dvpukp7n8f" path="res://icon.svg" id="2_btcbx"]
+[ext_resource type="PackedScene" uid="uid://cq2tyiegy3ilm" path="res://entity.tscn" id="3_btcbx"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_4flbx"]
 size = Vector2(30, 60)
@@ -11,6 +12,9 @@ size = Vector2(27.205, 20)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_btcbx"]
 size = Vector2(20, 60)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gwnis"]
+size = Vector2(25, 40)
 
 [node name="Player" type="CharacterBody2D" unique_id=428496900 node_paths=PackedStringArray("ground_check_cast", "wall_check_right", "wall_check_left")]
 collision_mask = 3
@@ -42,3 +46,9 @@ z_index = -1
 shape = SubResource("RectangleShape2D_btcbx")
 target_position = Vector2(-20, 0)
 collision_mask = 2
+
+[node name="Entity" parent="." unique_id=680934938 instance=ExtResource("3_btcbx")]
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="Entity" unique_id=504392022]
+shape = SubResource("RectangleShape2D_gwnis")
+debug_color = Color(0.34832796, 0.62084424, 0, 0.41960785)

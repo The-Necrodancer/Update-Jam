@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://cq2tyiegy3ilm"]
+
+[ext_resource type="Script" uid="uid://sd50dq1pv6m2" path="res://Entity.gd" id="1_6e8rh"]
+
+[node name="Entity" type="Area2D" unique_id=680934938]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("1_6e8rh")
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
